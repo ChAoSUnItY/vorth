@@ -1,5 +1,5 @@
 import { parse } from "https://deno.land/std@0.159.0/flags/mod.ts";
-import { Compilation } from "./src/compilation.ts";
+import { Compilation, Simulator } from "./src/compilation.ts";
 
 const args = parse(Deno.args);
 
@@ -9,4 +9,8 @@ if (args["_"].length == 0) {
     Deno.exit(1);
 }
 
-new Compilation().compile(args["_"][0].toString());
+const tokens = new Compilation().compile(args["_"][0].toString());
+const sim = new Simulator(tokens);
+
+sim.run();
+
