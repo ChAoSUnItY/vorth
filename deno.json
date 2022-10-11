@@ -1,0 +1,12 @@
+{
+    "fmt": {
+        "options": {
+            "indentWidth": 4
+        }
+    },
+    "tasks": {
+        "example": "deno run --allow-read --allow-write main.ts examples/example.vorth -o test.S",
+        "example-venus": "deno run --allow-read --allow-write main.ts examples/example.vorth -o test.S",
+        "example-linux": "deno run --allow-read --allow-write main.ts examples/example.vorth -o test.S --env linux"
+    }
+}
