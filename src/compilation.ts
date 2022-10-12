@@ -112,6 +112,7 @@ export class Gen {
     private readonly _stackChain = new StackChain();
     private readonly _tokens: Token[];
     private readonly _platformTarget: PlatformTarget;
+    private readonly _crossRef: boolean;
     
     // Builders
     private _dataBuilder = '';
@@ -119,9 +120,10 @@ export class Gen {
     private _predefBuilder = '';
     private _procBuilder = '';
 
-    constructor(tokens: Token[], platformTarget: PlatformTarget) {
+    constructor(tokens: Token[], platformTarget: PlatformTarget, crossRef: boolean) {
         this._tokens = tokens;
         this._platformTarget = platformTarget;
+        this._crossRef = crossRef;
     }
 
     gen(): string {

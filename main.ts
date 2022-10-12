@@ -16,19 +16,20 @@ switch (taskName) {
         const sourceFile = args["_"][1].toString();
         const outputFile = args["o"] ?? `output.S`;
         const platformTarget = <PlatformTarget> args["t"] ?? PlatformTarget.Venus;
+        const crossRef = <boolean> args["cross-ref"] ?? false;
 
         const tokens = new Parser().compile(sourceFile);
-        const gen = new Gen(tokens, platformTarget);
+        const gen = new Gen(tokens, platformTarget, crossRef);
         const result = gen.gen();
 
         Deno.writeTextFileSync(outputFile, result);
-        // TODO: Code gen
         break;
     }
     case "run": {
         const sourceFile = args["_"][1].toString();
         const tokens = new Parser().compile(sourceFile);
         const sim = new Simulator(tokens);
+
         sim.run();
         break;
     }
