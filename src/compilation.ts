@@ -1,8 +1,5 @@
-export class Compilation {
-    private _stackChain = new StackChain();
-
+export class Parser {
     // File Lexing
-
     private findCol(line: string, start: number, predicate: (input: string) => boolean): number {
         while (start < line.length && !predicate(line[start]))
             start++;
@@ -105,6 +102,70 @@ export class Simulator {
     }
 }
 
+export class Gen {
+    private readonly _stackChain = new StackChain();
+    private readonly _tokens: Token[];
+    
+    // Builders
+    private _dataBuilder = '';
+    private _globalBuilder = '';
+    private _predefBuilder = '';
+    private _procBuilder = '';
+
+    constructor(tokens: Token[]) {
+        this._tokens = tokens;
+    }
+
+    gen(): string {
+        this._globalBuilder += '.globl _start\n\n_start:\n';
+
+        this.genTokens();
+        
+        return this._dataBuilder + this._globalBuilder + this._predefBuilder + this._procBuilder;
+    }
+
+    private genTokens() {
+        let procBuilder = '';
+        
+        for (const token of this._tokens) {
+            switch (token[0]) {
+                case TokenType.Int: {
+                    this._stackChain.push(4);
+                    procBuilder += `    # Push\n`;
+                    procBuilder += `    li      a0, ${token[1]}\n`;
+                    procBuilder += `    sw      a0, -${this._stackChain.stackOffset}(sp)\n`;
+                    break;
+                }
+                case TokenType.Plus: {
+                    let offset = this._stackChain.stackOffset;
+                    this._stackChain.pop(8);
+                    procBuilder += `    # Add\n`;
+                    procBuilder += `    lw      a0, ${offset}(sp)\n`;
+                    procBuilder += `    lw      a1, ${offset -= 4}(sp)\n`;
+                    procBuilder += `    add     a0, a0, a1\n`;
+                    procBuilder += `    sw      a0, ${offset}(sp)\n`;
+                    break;
+                }
+                case TokenType.Minus: {
+
+                    break;
+                }
+                case TokenType.Dump: {
+
+                    break;
+                }
+            }
+        }
+
+        procBuilder = this.postGenProc() + procBuilder;
+        this._procBuilder += procBuilder;
+    }
+
+    private postGenProc(): string {
+        return `    addi    sp, sp, -${this._stackChain.maxStackSize}\n`;
+    }
+}
+
 enum TokenType {
     Int,
     Dump,
@@ -115,6 +176,14 @@ enum TokenType {
 type Token = [TokenType, string | null]
 
 class StackChain {
-    public stackOffset: number = 0;
-    public maxStackSize: number = 0;
+    stackOffset = 0;
+    maxStackSize = 0;
+
+    push(size: number) {
+        this.maxStackSize = Math.max(this.maxStackSize, this.stackOffset += size);
+    }
+
+    pop(size: number) {
+        this.stackOffset -= size;
+    }
 }
