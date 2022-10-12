@@ -175,6 +175,14 @@ export class Gen {
                     procBuilder += `    sw      a0, ${offset}(sp)\n`;
                     break;
                 }
+                case TokenType.Neg: {
+                    const offset = this._stackChain.stackOffset;
+                    procBuilder += `    # Neg\n`;
+                    procBuilder += `    lw      a0, ${offset}(sp)\n`;
+                    procBuilder += `    seqz    a0, a0\n`;
+                    procBuilder += `    sw      a0, ${offset}(sp)\n`;
+                    break;
+                }
                 case TokenType.Dump: {
                     const offset = this._stackChain.stackOffset;
                     this._stackChain.pop(4);

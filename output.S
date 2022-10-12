@@ -25,6 +25,10 @@ _start:
     xor     a0, a0, a1
     seqz    a0, a0
     sw      a0, 4(sp)
+    # Neg
+    lw      a0, 4(sp)
+    seqz    a0, a0
+    sw      a0, 4(sp)
     # Dump
     li      a0, 1
     lw      a1, 4(sp)
