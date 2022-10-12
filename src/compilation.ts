@@ -181,8 +181,14 @@ export class Gen {
                             break;
                         }
                         case PlatformTarget.Venus: {
-                            procBuilder += `    lw      a0, ${offset}(sp)\n`;
-                            procBuilder += `    call dump\n`;
+                            procBuilder += `    li      a0, 1\n`;
+                            procBuilder += `    lw      a1, ${offset}(sp)\n`;
+                            procBuilder += `    ecall\n`;
+                            procBuilder += `    li      a0, 9\n`;
+                            procBuilder += `    li      a1, 2\n`;
+                            procBuilder += `    ecall\n`;
+                            procBuilder += `    li      a1, 10\n`;
+                            procBuilder += `    sw      a1, 4(a0)`;
                             break;
                         }
                     }
