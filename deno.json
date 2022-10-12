@@ -7,6 +7,7 @@
     "tasks": {
         "help": "deno run --allow-read --allow-write main.ts help",
         "run": "deno run --allow-read --allow-write main.ts run examples/example.vorth",
-        "compile": "deno run --allow-read --allow-write main.ts compile examples/example.vorth"
+        "venus": "deno run --allow-read --allow-write main.ts compile examples/example.vorth",
+        "linux": "deno run --allow-read --allow-write main.ts compile examples/example.vorth -t linux"
     }
 }

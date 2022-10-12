@@ -119,7 +119,18 @@ export class Gen {
     }
 
     gen(): string {
-        this._globalBuilder += '.globl _start\n\n_start:\n';
+        switch (this._platformTarget) {
+            case PlatformTarget.Venus: {
+                this._predefBuilder += Deno.readTextFileSync('template/venus.S');
+                this._globalBuilder += '.globl _start\n\n';
+                break;
+            }
+            case PlatformTarget.Linux: {
+                this._predefBuilder += Deno.readTextFileSync('template/linux.S');
+                this._globalBuilder += '.global _start\n\n';
+                break;
+            }
+        }
 
         this.genTokens();
         
@@ -164,14 +175,17 @@ export class Gen {
                     procBuilder += `    # Dump\n`;
 
                     switch (this._platformTarget) {
+                        case PlatformTarget.Linux: {
+                            procBuilder += `    lw      a0, ${offset}(sp)\n`;
+                            procBuilder += `    call dump\n`;
+                            break;
+                        }
                         case PlatformTarget.Venus: {
-                            procBuilder += `    addi    a0, x0, 1\n`;
+                            procBuilder += `    lw      a0, ${offset}(sp)\n`;
+                            procBuilder += `    call dump\n`;
                             break;
                         }
                     }
-
-                    procBuilder += `    lw      a1, ${offset}(sp)\n`;
-                    procBuilder += `    ecall`;
 
                     break;
                 }
@@ -183,12 +197,13 @@ export class Gen {
     }
 
     private postGenProc(): string {
-        return `    addi    sp, sp, -${this._stackChain.maxStackSize}\n`;
+        return `_start:\n    addi    sp, sp, -${this._stackChain.maxStackSize}\n`;
     }
 }
 
 export enum PlatformTarget {
-    Venus
+    Venus = "venus",
+    Linux = "linux"
 }
 
 enum TokenType {
