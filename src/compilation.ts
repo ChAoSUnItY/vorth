@@ -53,6 +53,15 @@ export class Parser {
             case "!": {
                 return [TokenType.Neg, null];
             }
+            case "if": {
+                return [TokenType.If, null];
+            }
+            case "else": {
+                return [TokenType.Else, null];
+            }
+            case "end": {
+                return [TokenType.End, null];
+            }
             default: {
                 return [TokenType.Int, literal];
             }
@@ -258,7 +267,10 @@ enum TokenType {
     Plus,
     Minus,
     Eq,
-    Neg
+    Neg,
+    If,
+    Else,
+    End
 }
 
 type Token = [TokenType, string | null]
