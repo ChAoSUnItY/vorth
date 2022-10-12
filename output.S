@@ -16,6 +16,15 @@ _start:
     lw      a1, 4(sp)
     add     a0, a0, a1
     sw      a0, 4(sp)
+    # Push
+    li      a0, 155
+    sw      a0, 8(sp)
+    # Eq
+    lw      a0, 8(sp)
+    lw      a1, 4(sp)
+    xor     a0, a0, a1
+    seqz    a0, a0
+    sw      a0, 4(sp)
     # Dump
     li      a0, 1
     lw      a1, 4(sp)

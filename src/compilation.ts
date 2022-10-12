@@ -47,6 +47,12 @@ export class Parser {
             case "->": {
                 return [TokenType.Dump, null];
             }
+            case "=": {
+                return [TokenType.Eq, null];
+            }
+            case "!": {
+                return [TokenType.Neg, null];
+            }
             default: {
                 return [TokenType.Int, literal];
             }
@@ -158,6 +164,17 @@ export class Gen {
                     procBuilder += `    sw      a0, ${offset}(sp)\n`;
                     break;
                 }
+                case TokenType.Eq: {
+                    let offset = this._stackChain.stackOffset;
+                    this._stackChain.pop(4);
+                    procBuilder += `    # Eq\n`;
+                    procBuilder += `    lw      a0, ${offset}(sp)\n`;
+                    procBuilder += `    lw      a1, ${offset -= 4}(sp)\n`;
+                    procBuilder += `    xor     a0, a0, a1\n`;
+                    procBuilder += `    seqz    a0, a0\n`;
+                    procBuilder += `    sw      a0, ${offset}(sp)\n`;
+                    break;
+                }
                 case TokenType.Dump: {
                     const offset = this._stackChain.stackOffset;
                     this._stackChain.pop(4);
@@ -229,7 +246,9 @@ enum TokenType {
     Int,
     Dump,
     Plus,
-    Minus
+    Minus,
+    Eq,
+    Neg
 }
 
 type Token = [TokenType, string | null]
