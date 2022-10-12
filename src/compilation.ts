@@ -105,6 +105,7 @@ export class Simulator {
 export class Gen {
     private readonly _stackChain = new StackChain();
     private readonly _tokens: Token[];
+    private readonly _platformTarget: PlatformTarget;
     
     // Builders
     private _dataBuilder = '';
@@ -112,8 +113,9 @@ export class Gen {
     private _predefBuilder = '';
     private _procBuilder = '';
 
-    constructor(tokens: Token[]) {
+    constructor(tokens: Token[], platformTarget: PlatformTarget) {
         this._tokens = tokens;
+        this._platformTarget = platformTarget;
     }
 
     gen(): string {
@@ -133,12 +135,12 @@ export class Gen {
                     this._stackChain.push(4);
                     procBuilder += `    # Push\n`;
                     procBuilder += `    li      a0, ${token[1]}\n`;
-                    procBuilder += `    sw      a0, -${this._stackChain.stackOffset}(sp)\n`;
+                    procBuilder += `    sw      a0, ${this._stackChain.stackOffset}(sp)\n`;
                     break;
                 }
                 case TokenType.Plus: {
                     let offset = this._stackChain.stackOffset;
-                    this._stackChain.pop(8);
+                    this._stackChain.pop(4);
                     procBuilder += `    # Add\n`;
                     procBuilder += `    lw      a0, ${offset}(sp)\n`;
                     procBuilder += `    lw      a1, ${offset -= 4}(sp)\n`;
@@ -147,10 +149,29 @@ export class Gen {
                     break;
                 }
                 case TokenType.Minus: {
-
+                    let offset = this._stackChain.stackOffset;
+                    this._stackChain.pop(4);
+                    procBuilder += `    # Sub\n`;
+                    procBuilder += `    lw      a0, ${offset}(sp)\n`;
+                    procBuilder += `    lw      a1, ${offset -= 4}(sp)\n`;
+                    procBuilder += `    sub     a0, a0, a1\n`;
+                    procBuilder += `    sw      a0, ${offset}(sp)\n`;
                     break;
                 }
                 case TokenType.Dump: {
+                    const offset = this._stackChain.stackOffset;
+                    this._stackChain.pop(4);
+                    procBuilder += `    # Dump\n`;
+
+                    switch (this._platformTarget) {
+                        case PlatformTarget.Venus: {
+                            procBuilder += `    addi    a0, x0, 1\n`;
+                            break;
+                        }
+                    }
+
+                    procBuilder += `    lw      a1, ${offset}(sp)\n`;
+                    procBuilder += `    ecall`;
 
                     break;
                 }
@@ -164,6 +185,10 @@ export class Gen {
     private postGenProc(): string {
         return `    addi    sp, sp, -${this._stackChain.maxStackSize}\n`;
     }
+}
+
+export enum PlatformTarget {
+    Venus
 }
 
 enum TokenType {

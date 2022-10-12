@@ -1,5 +1,5 @@
 import { parse } from "https://deno.land/std@0.159.0/flags/mod.ts";
-import { Gen, Parser, Simulator } from "./src/compilation.ts";
+import { Gen, Parser, PlatformTarget, Simulator } from "./src/compilation.ts";
 
 const args = parse(Deno.args);
 
@@ -15,9 +15,10 @@ switch (taskName) {
     case "compile": {
         const sourceFile = args["_"][1].toString();
         const outputFile = args["o"] ?? `output.S`;
+        const platformTarget = <PlatformTarget> args["t"] ?? PlatformTarget.Venus;
 
         const tokens = new Parser().compile(sourceFile);
-        const gen = new Gen(tokens);
+        const gen = new Gen(tokens, platformTarget);
         const result = gen.gen();
 
         Deno.writeTextFileSync(outputFile, result);
