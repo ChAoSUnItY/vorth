@@ -14,11 +14,13 @@ const taskName = args["_"][0].toString();
 switch (taskName) {
     case "compile": {
         const sourceFile = args["_"][1].toString();
+        const outputFile = args["o"] ?? `output.S`;
+
         const tokens = new Parser().compile(sourceFile);
         const gen = new Gen(tokens);
         const result = gen.gen();
 
-        console.log(result);
+        Deno.writeTextFileSync(outputFile, result);
         // TODO: Code gen
         break;
     }
