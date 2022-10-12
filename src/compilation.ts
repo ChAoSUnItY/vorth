@@ -119,19 +119,8 @@ export class Gen {
     }
 
     gen(): string {
-        switch (this._platformTarget) {
-            case PlatformTarget.Venus: {
-                this._predefBuilder += Deno.readTextFileSync('template/venus.S');
-                this._globalBuilder += '.globl _start\n\n';
-                break;
-            }
-            case PlatformTarget.Linux: {
-                this._predefBuilder += Deno.readTextFileSync('template/linux.S');
-                this._globalBuilder += '.global _start\n\n';
-                break;
-            }
-        }
-
+        this.genEntry();
+        this._dataBuilder += this.genData();
         this.genTokens();
         
         return this._dataBuilder + this._globalBuilder + this._predefBuilder + this._procBuilder;
@@ -184,11 +173,9 @@ export class Gen {
                             procBuilder += `    li      a0, 1\n`;
                             procBuilder += `    lw      a1, ${offset}(sp)\n`;
                             procBuilder += `    ecall\n`;
-                            procBuilder += `    li      a0, 9\n`;
-                            procBuilder += `    li      a1, 2\n`;
+                            procBuilder += `    li      a0, 4\n`;
+                            procBuilder += `    la      a1, nl\n`;
                             procBuilder += `    ecall\n`;
-                            procBuilder += `    li      a1, 10\n`;
-                            procBuilder += `    sw      a1, 4(a0)`;
                             break;
                         }
                     }
@@ -200,6 +187,32 @@ export class Gen {
 
         procBuilder = this.postGenProc() + procBuilder;
         this._procBuilder += procBuilder;
+    }
+
+    private genEntry() {
+        switch (this._platformTarget) {
+            case PlatformTarget.Venus: {
+                this._predefBuilder += Deno.readTextFileSync('template/venus.S');
+                this._globalBuilder += '.globl _start\n\n.text\n';
+                break;
+            }
+            case PlatformTarget.Linux: {
+                this._predefBuilder += Deno.readTextFileSync('template/linux.S');
+                this._globalBuilder += '.global _start\n\n.text\n';
+                break;
+            }
+        }
+    }
+
+    private genData(): string {
+        switch (this._platformTarget) {
+            case PlatformTarget.Linux: {
+                return ``;
+            }
+            case PlatformTarget.Venus: {
+                return `.data\n    nl:     .asciiz "\\n"\n`;
+            }
+        }
     }
 
     private postGenProc(): string {
