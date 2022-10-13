@@ -89,7 +89,9 @@ export class Simulator {
     run() {
         const stack: StackItem[] = [];
 
-        for (const [token, val] of this._tokens) {
+        for (let ip = 0; ip < this._tokens.length; ip++) {
+            const [token, val] = this._tokens[ip];
+
             switch (token) {
                 case TokenType.Int: {
                     stack.push(+val!);
@@ -112,17 +114,31 @@ export class Simulator {
                     console.log(v);
                     break;
                 }
+                case TokenType.Eq: {
+                    const v1 = stack.pop()!;
+                    const v2 = stack.pop()!;
+                    stack.push(+(v1 === v2));
+                    break;
+                }
+                case TokenType.Neg: {
+                    const v = stack.pop();
+                    stack.push(+!v);
+                    break;
+                }
             }
         }
     }
 }
 
 export class Gen {
-    private readonly _stackChain = new StackChain();
-    private readonly _tokens: Token[];
+    // Options
     private readonly _platformTarget: PlatformTarget;
     private readonly _crossRef: boolean;
     
+    private readonly _tokens: Token[];
+    private readonly _stackChain = new StackChain();
+    private readonly _crossReferenceStack: [TokenType, number][] = [];
+
     // Builders
     private _dataBuilder = '';
     private _globalBuilder = '';
@@ -216,6 +232,10 @@ export class Gen {
                         }
                     }
 
+                    break;
+                }
+                case TokenType.If: {
+                    // TODO
                     break;
                 }
             }
