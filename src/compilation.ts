@@ -86,7 +86,33 @@ export class Simulator {
         this._tokens = tokens;
     }
 
+    private crossReferenceBlocks() {
+        const referenceStack: number[] = [];
+
+        for (let ip = 0; ip < this._tokens.length; ip++) {
+            const [token, val] = this._tokens[ip];
+
+            switch (token) {
+                case TokenType.If: {
+                    referenceStack.push(ip);
+                    break;
+                }
+                case TokenType.End: {
+                    const ifIp = referenceStack.pop()!;
+                    console.assert(this._tokens[ifIp][0] === TokenType.If);
+                    this._tokens[ifIp] = [TokenType.If, ip.toString()];
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+    }
+
     run() {
+        this.crossReferenceBlocks();
+
         const stack: StackItem[] = [];
 
         for (let ip = 0; ip < this._tokens.length; ip++) {
@@ -121,8 +147,16 @@ export class Simulator {
                     break;
                 }
                 case TokenType.Neg: {
-                    const v = stack.pop();
-                    stack.push(+!v);
+                    const v = stack.pop()!;
+                    stack.push(+v);
+                    break;
+                }
+                case TokenType.If: {
+                    const v = stack.pop()!;
+                    if (Boolean(v) !== true) {
+                        console.assert(val !== null);
+                        ip = +val!;
+                    }
                     break;
                 }
             }
