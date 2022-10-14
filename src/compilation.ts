@@ -90,17 +90,27 @@ export class Simulator {
         const referenceStack: number[] = [];
 
         for (let ip = 0; ip < this._tokens.length; ip++) {
-            const [token, val] = this._tokens[ip];
+            const [token, _] = this._tokens[ip];
 
             switch (token) {
                 case TokenType.If: {
                     referenceStack.push(ip);
                     break;
                 }
-                case TokenType.End: {
+                case TokenType.Else: {
                     const ifIp = referenceStack.pop()!;
                     console.assert(this._tokens[ifIp][0] === TokenType.If);
-                    this._tokens[ifIp] = [TokenType.If, ip.toString()];
+                    this._tokens[ifIp] = [TokenType.If, (ip + 1).toString()];
+                    referenceStack.push(ip);
+                    break;
+                }
+                case TokenType.End: {
+                    const blockIp = referenceStack.pop()!;
+                    if ([TokenType.If, TokenType.Else].includes(this._tokens[blockIp][0])) {
+                        this._tokens[blockIp] = [this._tokens[blockIp][0], ip.toString()];
+                    } else {
+                        console.error("Illegal `end`, no cross reference block on stack");
+                    }
                     break;
                 }
                 default: {
@@ -115,40 +125,46 @@ export class Simulator {
 
         const stack: StackItem[] = [];
 
-        for (let ip = 0; ip < this._tokens.length; ip++) {
+        for (let ip = 0; ip < this._tokens.length;) {
             const [token, val] = this._tokens[ip];
 
             switch (token) {
                 case TokenType.Int: {
                     stack.push(+val!);
+                    ip++
                     break;
                 }
                 case TokenType.Plus: {
                     const v1 = +stack.pop()!;
                     const v2 = +stack.pop()!;
                     stack.push(v2 + v1);
+                    ip++
                     break;
                 }
                 case TokenType.Minus: {
                     const v1 = +stack.pop()!;
                     const v2 = +stack.pop()!;
                     stack.push(v2 - v1);
+                    ip++
                     break;
                 }
                 case TokenType.Dump: {
                     const v = stack.pop();
                     console.log(v);
+                    ip++
                     break;
                 }
                 case TokenType.Eq: {
                     const v1 = stack.pop()!;
                     const v2 = stack.pop()!;
                     stack.push(+(v1 === v2));
+                    ip++
                     break;
                 }
                 case TokenType.Neg: {
                     const v = stack.pop()!;
-                    stack.push(+v);
+                    stack.push(+!v);
+                    ip++
                     break;
                 }
                 case TokenType.If: {
@@ -156,7 +172,18 @@ export class Simulator {
                     if (Boolean(v) !== true) {
                         console.assert(val !== null);
                         ip = +val!;
+                    } else {
+                        ip++;
                     }
+                    break;
+                }
+                case TokenType.Else: {
+                    console.assert(val !== null);
+                    ip = +val!;
+                    break;
+                }
+                case TokenType.End: {
+                    ip++;
                     break;
                 }
             }
