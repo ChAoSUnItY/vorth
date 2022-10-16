@@ -198,7 +198,7 @@ export class Gen {
     
     private readonly _tokens: Token[];
     private readonly _stackChain = new StackChain();
-    private readonly _crossReferenceStack: [TokenType, number][] = [];
+    private readonly _labelCounter = 0;
 
     // Builders
     private _dataBuilder = '';
