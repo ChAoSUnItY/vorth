@@ -220,7 +220,51 @@ export class Gen {
         return this._dataBuilder + this._globalBuilder + this._predefBuilder + this._procBuilder;
     }
 
+    private *genLabel(): Generator<number> {
+        let i = 0;
+        for (;;) {
+            yield i++;
+        }
+    }
+
+    private crossReferenceBlocks() {
+        const labelStack: [number, number][] = [];
+        const labelGen = this.genLabel();
+
+        for (let ip = 0; ip < this._tokens.length; ip++) {
+            const [token, _] = this._tokens[ip];
+
+            switch (token) {
+                case TokenType.If: {
+                    labelStack.push([ip, labelGen.next().value]);
+                    break;
+                }
+                case TokenType.Else: {
+                    const [ifIp, label] = labelStack.pop()!;
+                    console.assert(this._tokens[ifIp][0] === TokenType.If);
+                    this._tokens[ifIp] = [TokenType.If, label.toString()];
+                    labelStack.push([ip, labelGen.next().value]);
+                    break;
+                }
+                case TokenType.End: {
+                    const [blockIp, label] = labelStack.pop()!;
+                    if ([TokenType.If, TokenType.Else].includes(this._tokens[blockIp][0])) {
+                        this._tokens[blockIp] = [this._tokens[blockIp][0], label.toString()];
+                    } else {
+                        console.error("Illegal `end`, no cross reference block on stack");
+                    }
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+    }
+
     private genTokens() {
+        this.crossReferenceBlocks();
+
         let procBuilder = '';
         
         for (const token of this._tokens) {
