@@ -259,8 +259,6 @@ export class Gen {
                     break;
                 }
             }
-
-            console.log(this._tokens[ip])
         }
     }
 
