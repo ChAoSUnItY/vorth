@@ -259,6 +259,8 @@ export class Gen {
                     break;
                 }
             }
+
+            console.log(this._tokens[ip])
         }
     }
 
@@ -344,17 +346,17 @@ export class Gen {
                     this._stackChain.pop(4);
                     procBuilder += `    # If begin\n`;
                     procBuilder += `    lw      a0, ${offset}(sp)\n`
-                    procBuilder += `    beqz    a0, .LBL${token[1]!}\n`
+                    procBuilder += `    beqz    a0, LBL${token[1]!}\n`
                     break;
                 }
                 case TokenType.Else: {
                     procBuilder += `    # Else begin\n`;
-                    procBuilder += `.LBL${token[1]!}\n`;
+                    procBuilder += `LBL${token[1]!}:\n`;
                     break;
                 }
                 case TokenType.End: {
                     procBuilder += `    # End\n`;
-                    procBuilder += `.LBL${token[1]!}\n`;
+                    procBuilder += `LBL${token[1]!}:\n`;
                     break;
                 }
             }
